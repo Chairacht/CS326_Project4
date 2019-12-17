@@ -1,0 +1,183 @@
+<!DOCTYPE html>	<!--To use html5 -->			
+<html>
+<head>	<!-- head part -->
+	<title>Loan Calculator</title>	<!--title of the webpage-->
+	<style type="text/css">
+		body {
+			margin: auto;
+			
+		}
+
+	</style>
+</head>
+<body>
+	<h1>CS 326 Javascript Car Loan Calculator</h1> 	<!--header-->
+	<h1>Chairacht Triyapanjawit</h1>
+	<hr>
+	<form name="loanInfo"> 		<!--using form with a name so it could be linked with functions -->
+		<table>					<!--start of the table-->
+			<tbody>
+				<tr>			<!--table row-->
+					<p><td>Car Cost Amount</td></p>
+					<td><input type="text" name="carCost" placeholder="Enter car cost"></td>	<!--input the car price-->
+				</tr>			<!--table row ends here-->
+				<tr>			<!--next table row-->
+					<td>Down Payment</td>
+					<td><input type="text" name="dPay" placeholder="Enter down payment" onchange="valid_loan()";></td> <!--input the down payment, and call valid_loan() function to validate input-->
+				</tr>			<!--row ends here-->
+				<tr>
+					<td>Annual Interest Rate</td>
+					<td><input type="text" name="aInterest" placeholder="Between 0% to 15%"  onchange="valid_int();"></td> <!--input the interest rate, and call valid_int() function to validate input-->
+				</tr>
+				<tr>
+					<td>Term (in years) (1-6)</td>
+					<td><input type="text" name="term" placeholder="Between 1 to 6 years"  onchange="valid_term();"></td>	<!--input the term, and call valid_term() function to validate input-->
+				</tr>	<!--put line-->
+			</tbody>
+		</table>	<!--end of table-->
+
+		<table>		<!--new table-->
+			<tbody>
+				<tr>
+					<!--button to start calculating. when the button is clicked, it's going to call calculate() and disp_schedule()-->
+					<td><input type="button" value="press to calculate auto loan information" onclick="calculate();disp_schedule()"></td>
+				</tr>
+				<tr>
+					<!--button to reset everything. when the button is clicked, it's going to call restForm()-->
+					<td><input type="button" value="reset form" onclick="resetForm()"></td>
+				</tr>
+			</tbody>
+		</table>
+		<hr>
+
+		<table>
+			<tbody>
+				<tr>
+					<td>Monthly Payment</td>
+					<td><input type="text" disabled name="mPayment"></td> 	<!--the textbox for monthly payment. result from calculation is going to be displayed in here-->
+				</tr>
+				<tr>
+					<td>Total Payments</td>
+					<td><input type="text" disabled name="totalPayment"></td> 	<!--the textbox for total payment. result from calculation is going to be displayed in here-->
+				</tr>
+			</tbody>
+		</table>
+
+		<table>
+			<tbody>
+				<tr>
+					<td>Payment Schedule</td>
+				</tr>
+				<tr>
+					<!--textbox for payment schedule-->
+					<td><textarea name="schedule" disabled rows="15" cols="100">
+					</textarea></td>
+				</tr>
+			</tbody>
+		</table>
+	</form>
+
+	<script language="Javascript">
+		// this function calculates for monthly payment and total payment
+		function calculate() {			
+    		var cCost = document.loanInfo.carCost.value;	// get car cost from input in the form "loanInfo" and "carCost" variable 
+    		var downP = document.loanInfo.dPay.value;		// get down payment from input in the form "loanInfo" and "dPay" variable
+    		var irate = document.loanInfo.aInterest.value / 100 / 12;	// get interest rate and calculate to monthly interest
+    		var months = document.loanInfo.term.value * 12;		// get term in years and calculate to months
+    		var tLoan = cCost - downP;						// calculate total loan by subtracting car price with down payment
+    		var mPayment = tLoan * (irate * Math.pow(1+irate, months)) / (Math.pow(1+irate, months) - 1); // calculate monthly payment
+    		
+    		document.loanInfo.mPayment.value = "$" + round(mPayment);	// output to the monthly payment textbox
+    		document.loanInfo.totalPayment.value = "$" + round(mPayment*months); // output to the total payment textbox
+
+		}
+
+		// this function displays the payment schedule
+		function disp_schedule() {
+			// display head of table
+			document.loanInfo.schedule.value = "Car Payment Number" + "     Interest" + "     Principal" + "       Balance\n"+
+    										   "------------------" + "     --------" + "     ---------" + "       -------\n";
+    		// get the values needed
+			var cCost = document.loanInfo.carCost.value;
+    		var downP = document.loanInfo.dPay.value;
+    		var irate = document.loanInfo.aInterest.value / 100 / 12;
+    		var months = document.loanInfo.term.value * 12;
+    		var tLoan = cCost - downP;
+    		var mPayment = tLoan * (irate * Math.pow(1+irate, months)) / (Math.pow(1+irate, months) - 1);
+
+    		// make arrays
+ 			var payNum = [];
+ 			var interest = [];
+ 			var principal = [];
+ 			var balance = [];
+ 			var counter = 0;
+
+ 			// set first balance to original number of loan
+ 			balance[counter] = tLoan;
+ 			counter++;
+
+ 			while (counter <= months) {		// keep going through arrays and assign values
+ 				payNum[counter] = counter;
+ 				interest[counter] = balance[counter-1] * irate;
+ 				principal[counter] = mPayment - interest[counter];
+ 				balance[counter] = balance[counter-1] - principal[counter];
+
+ 				if(payNum[counter] < 10) {
+ 					var output = "        " + payNum[counter] + "               $" + interest[counter].toFixed(2) + "        $" + principal[counter].toFixed(2) + "      $" + balance[counter].toFixed(2) + "\n";	// toFixed() is to make the number 2 decimal points
+ 				}
+
+ 				else {
+ 					var output = "       " + payNum[counter] + "               $" + interest[counter].toFixed(2) + "        $" + principal[counter].toFixed(2) + "      $" + balance[counter].toFixed(2) + "\n";
+ 				}
+
+
+ 				document.loanInfo.schedule.value += output;		// output to schedule textbox
+
+ 				counter++;
+ 			}
+
+		}
+
+		// this function validates the interest input
+		function valid_int() {
+			var lInterest = document.loanInfo.aInterest.value;
+
+			if (lInterest < 0 || lInterest > 15) {
+				alert("Error, the interest rate does not appear to be a valid number. Please try again");
+			}
+		}
+
+		// this function validates loan amount
+		function valid_loan() {
+			var cCost = document.loanInfo.carCost.value;
+			var downPay = document.loanInfo.dPay.value;
+			var loanAmount = cCost - downPay;
+				if (loanAmount > 500000) {
+					alert("Error, the loan does not appear to be a valid number. Please try again");
+				}
+				else {
+					;
+				}
+		}
+
+		// this function validates term input
+		function valid_term() {
+			var term_year = document.loanInfo.term.value;
+
+			if (term_year > 6 || term_year < 1) {
+				alert("Error, the term does not appear to be a valid number. Please try again");
+			}
+		}
+
+		// this function resets everything in the form
+		function resetForm() {
+			document.loanInfo.reset();
+		}
+
+		// This funciton rounds a number to two decimal.
+		function round(x) {
+		  return Math.round(x*100)/100;
+		}
+	</script>
+</body>
+</html>
